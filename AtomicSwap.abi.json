@@ -1,0 +1,49 @@
+{
+	"ABI version": 0,
+	"functions": [{
+		"name": "constructor",
+		"inputs": [
+		],
+		"outputs": [
+		]
+	}, {
+		"name": "deposit",
+		"inputs": [
+			{"name":"recipient","type":"uint256"},
+			{"name":"_secretHash","type":"uint256"}
+		],
+		"outputs": [
+		]
+	}, {
+		"name": "refund",
+		"inputs": [
+			{"name":"recipient","type":"uint256"}
+		],
+		"outputs": [
+		]
+	}, {
+		"name": "getBalance",
+		"inputs": [
+			{"name":"creator","type":"uint256"}
+		],
+		"outputs": [
+			{"name":"value0","type":"uint256"}
+		]
+	}, {
+		"name": "getHash",
+		"inputs": [
+			{"name":"creator","type":"uint256"}
+		],
+		"outputs": [
+			{"name":"value0","type":"uint256"}
+		]
+	}, {
+		"name": "withdraw",
+		"inputs": [
+			{"name":"creator","type":"uint256"},
+			{"name":"_secret","type":"uint256"}
+		],
+		"outputs": [
+		]
+	}]
+}

@@ -1,0 +1,502 @@
+.globl	constructor
+.type	constructor, @function
+; protect constructor from twice call
+PUSHINT 1
+PUSHROOT CTOS PLDDICTQ
+PUSHCONT {
+	NEWDICT
+}
+IFNOT
+PUSHINT 64
+DICTUGET
+THROWIF 123
+PUSHINT 1 NEWC STU 1 ENDC CTOS
+PUSHINT 1
+PUSHROOT CTOS PLDDICTQ
+PUSHCONT {
+	NEWDICT
+}
+IFNOT
+PUSHINT 64
+DICTUSET
+NEWC STDICT ENDC
+POPROOT
+; Decode input parameters
+DROP
+PUSHINT $constructor_AtomicSwap$
+CALL 1
+RET
+
+.globl	constructor_AtomicSwap
+.type	constructor_AtomicSwap, @function
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Function: constructor_AtomicSwap
+;; SafeTime
+PUSHINT 3
+NEWC STU 256 ENDC CTOS
+PUSHINT 100
+PUSHROOT CTOS PLDDICT
+PUSHINT 64
+DICTUSET
+NEWC STDICT ENDC
+POPROOT
+
+.globl	deposit
+.type	deposit, @function
+; Decode input parameters
+PUSHINT 256
+PUSHINT $smart_ldu$
+CALL 1
+PUSHINT 256
+PUSHINT $smart_ldu$
+CALL 1
+DROP
+PUSHINT $deposit_internal$
+CALL 1
+RET
+
+.globl	deposit_internal
+.type	deposit_internal, @function
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Function: deposit_internal
+;; param: recipient
+;; param: _secretHash
+;; get member balance
+;; Index of Swap.balance
+PUSHINT 3
+;; recipient
+;; stack=3
+PUSH s2
+;; get member sender
+PUSHINT $get_msg_sender$
+CALL 1
+;; swaps
+;; stack=5
+PUSHINT 101
+PUSHROOT CTOS PLDDICT
+PUSHINT 64
+DICTUGETOPTREF
+;; index
+PUSHINT 256
+DICTUGETOPTREF
+;; index
+PUSHINT 256
+DICTUGETOPTREF
+PUSHINT 8
+DICTUGET
+PUSHCONT { LDU 256 ENDS }
+PUSHCONT { PUSHINT 0 }
+IFELSE
+PUSHINT 0
+;; ==
+EQUAL
+THROWIFNOT 100
+;; fetch swaps
+PUSHINT 101
+PUSHROOT CTOS PLDDICT
+PUSHINT 64
+DICTUGETOPTREF
+;; get member sender
+PUSHINT $get_msg_sender$
+CALL 1
+SWAP
+PUSH2 S1, S0
+PUSHINT 256
+DICTUGETOPTREF
+;; recipient
+;; stack=5
+PUSH s4
+SWAP
+PUSHINT 0
+;; _secretHash
+;; stack=7
+PUSH s5
+;; now
+;; stack=8
+NOW
+;; get member value
+PUSHINT $get_msg_balance$
+CALL 1
+;; struct Swap
+NEWDICT
+;; member balance
+SWAP
+NEWC STU 256 ENDC CTOS
+SWAP
+PUSHINT 3
+SWAP
+PUSHINT 8
+DICTUSET
+;; member createdAt
+SWAP
+NEWC STU 256 ENDC CTOS
+SWAP
+PUSHINT 2
+SWAP
+PUSHINT 8
+DICTUSET
+;; member secretHash
+SWAP
+NEWC STU 256 ENDC CTOS
+SWAP
+PUSHINT 1
+SWAP
+PUSHINT 8
+DICTUSET
+;; member secret
+SWAP
+NEWC STU 256 ENDC CTOS
+SWAP
+PUSHINT 0
+SWAP
+PUSHINT 8
+DICTUSET
+ROTREV
+PUSHINT 256
+DICTUSETGETOPTREF DROP
+ROTREV
+PUSHINT 256
+DICTUSETGETOPTREF DROP
+;; assign swaps
+PUSHINT 101
+PUSHROOT CTOS PLDDICT
+PUSHINT 64
+DICTUSETGETOPTREF DROP
+NEWC STDICT ENDC
+POPROOT
+BLKDROP 2
+
+.globl	refund
+.type	refund, @function
+; Decode input parameters
+PUSHINT 256
+PUSHINT $smart_ldu$
+CALL 1
+DROP
+PUSHINT $refund_internal$
+CALL 1
+RET
+
+.globl	refund_internal
+.type	refund_internal, @function
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Function: refund_internal
+;; param: recipient
+;; recipient
+;; stack=1
+DUP
+;; get member sender
+PUSHINT $get_msg_sender$
+CALL 1
+;; swaps
+;; stack=3
+PUSHINT 101
+PUSHROOT CTOS PLDDICT
+PUSHINT 64
+DICTUGETOPTREF
+;; index
+PUSHINT 256
+DICTUGETOPTREF
+;; index
+PUSHINT 256
+DICTUGETOPTREF
+;; decl: swap
+;; get member balance
+;; Index of Swap.balance
+PUSHINT 3
+;; swap
+;; stack=3
+PUSH s1
+PUSHINT 8
+DICTUGET
+PUSHCONT { LDU 256 ENDS }
+PUSHCONT { PUSHINT 0 }
+IFELSE
+PUSHINT 0
+;; >
+GREATER
+THROWIFNOT 100
+;; get member createdAt
+;; Index of Swap.createdAt
+PUSHINT 2
+;; swap
+;; stack=3
+PUSH s1
+PUSHINT 8
+DICTUGET
+PUSHCONT { LDU 256 ENDS }
+PUSHCONT { PUSHINT 0 }
+IFELSE
+;; SafeTime
+;; stack=3
+PUSHINT 100
+PUSHROOT CTOS PLDDICT
+PUSHINT 64
+DICTUGET
+PUSHCONT { LDU 256 ENDS }
+PUSHCONT { PUSHINT 0 }
+IFELSE
+;; +
+ADD
+;; now
+;; stack=3
+NOW
+;; <
+LESS
+THROWIFNOT 100
+;; get member balance
+;; Index of Swap.balance
+PUSHINT 3
+;; swap
+;; stack=3
+PUSH s1
+PUSHINT 8
+DICTUGET
+PUSHCONT { LDU 256 ENDS }
+PUSHCONT { PUSHINT 0 }
+IFELSE
+;; transfer()
+;; get member sender
+PUSHINT $get_msg_sender$
+CALL 1
+NEWC ENDC CTOS
+PUSHINT $send_grams$
+CALL 1
+BLKDROP 2
+
+.globl	getBalance
+.type	getBalance, @function
+; Decode input parameters
+PUSHINT 256
+PUSHINT $smart_ldu$
+CALL 1
+DROP
+PUSHINT $getBalance_internal$
+CALL 1
+;; emitting 1 value(s)
+NEWC
+PUSHINT 0
+STUR 8
+PUSHINT $getBalance$
+STUR 32
+NEWC
+PUSH s2
+STUR 256
+STBREFR
+ENDC CTOS
+PUSHINT $send_ext_msg$
+CALL 1
+RET
+
+.globl	getBalance_internal
+.type	getBalance_internal, @function
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Function: getBalance_internal
+;; param: creator
+;; get member balance
+;; Index of Swap.balance
+PUSHINT 3
+;; get member sender
+PUSHINT $get_msg_sender$
+CALL 1
+;; creator
+;; stack=3
+PUSH s2
+;; swaps
+;; stack=4
+PUSHINT 101
+PUSHROOT CTOS PLDDICT
+PUSHINT 64
+DICTUGETOPTREF
+;; index
+PUSHINT 256
+DICTUGETOPTREF
+;; index
+PUSHINT 256
+DICTUGETOPTREF
+PUSHINT 8
+DICTUGET
+PUSHCONT { LDU 256 ENDS }
+PUSHCONT { PUSHINT 0 }
+IFELSE
+;; return
+NIP
+RET
+
+.globl	getHash
+.type	getHash, @function
+; Decode input parameters
+PUSHINT 256
+PUSHINT $smart_ldu$
+CALL 1
+DROP
+PUSHINT $getHash_internal$
+CALL 1
+;; emitting 1 value(s)
+NEWC
+PUSHINT 0
+STUR 8
+PUSHINT $getHash$
+STUR 32
+NEWC
+PUSH s2
+STUR 256
+STBREFR
+ENDC CTOS
+PUSHINT $send_ext_msg$
+CALL 1
+RET
+
+.globl	getHash_internal
+.type	getHash_internal, @function
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Function: getHash_internal
+;; param: creator
+;; get member secretHash
+;; Index of Swap.secretHash
+PUSHINT 1
+;; get member sender
+PUSHINT $get_msg_sender$
+CALL 1
+;; creator
+;; stack=3
+PUSH s2
+;; swaps
+;; stack=4
+PUSHINT 101
+PUSHROOT CTOS PLDDICT
+PUSHINT 64
+DICTUGETOPTREF
+;; index
+PUSHINT 256
+DICTUGETOPTREF
+;; index
+PUSHINT 256
+DICTUGETOPTREF
+PUSHINT 8
+DICTUGET
+PUSHCONT { LDU 256 ENDS }
+PUSHCONT { PUSHINT 0 }
+IFELSE
+;; return
+NIP
+RET
+
+.globl	withdraw
+.type	withdraw, @function
+; Decode input parameters
+PUSHINT 256
+PUSHINT $smart_ldu$
+CALL 1
+PUSHINT 256
+PUSHINT $smart_ldu$
+CALL 1
+DROP
+PUSHINT $withdraw_internal$
+CALL 1
+RET
+
+.globl	withdraw_internal
+.type	withdraw_internal, @function
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Function: withdraw_internal
+;; param: creator
+;; param: _secret
+;; get member sender
+PUSHINT $get_msg_sender$
+CALL 1
+;; creator
+;; stack=3
+PUSH s2
+;; swaps
+;; stack=4
+PUSHINT 101
+PUSHROOT CTOS PLDDICT
+PUSHINT 64
+DICTUGETOPTREF
+;; index
+PUSHINT 256
+DICTUGETOPTREF
+;; index
+PUSHINT 256
+DICTUGETOPTREF
+;; decl: swap
+;; get member secret
+;; Index of Swap.secret
+PUSHINT 0
+;; swap
+;; stack=4
+PUSH s1
+PUSHINT 8
+DICTUGET
+PUSHCONT { LDU 256 ENDS }
+PUSHCONT { PUSHINT 0 }
+IFELSE
+PUSHINT 0
+;; ==
+EQUAL
+THROWIFNOT 100
+NEWC
+;; _secret
+;; stack=4
+PUSH s2
+STUR 256
+ENDC CTOS
+;; decl: __secret
+;; __secret
+;; stack=4
+DUP
+SHA256U
+;; get member secretHash
+;; Index of Swap.secretHash
+PUSHINT 1
+;; swap
+;; stack=6
+PUSH s3
+PUSHINT 8
+DICTUGET
+PUSHCONT { LDU 256 ENDS }
+PUSHCONT { PUSHINT 0 }
+IFELSE
+;; ==
+EQUAL
+THROWIFNOT 100
+;; fetch swap
+PUSH s1
+;; Index of Swap.secret
+PUSHINT 0
+SWAP
+;; _secret
+;; stack=6
+PUSH s4
+NEWC STU 256 ENDC CTOS
+ROTREV
+PUSHINT 8
+DICTUSET
+;; assign swap
+POP s2
+;; get member balance
+;; Index of Swap.balance
+PUSHINT 3
+;; swap
+;; stack=5
+PUSH s2
+PUSHINT 8
+DICTUGET
+PUSHCONT { LDU 256 ENDS }
+PUSHCONT { PUSHINT 0 }
+IFELSE
+;; transfer()
+;; get member sender
+PUSHINT $get_msg_sender$
+CALL 1
+NEWC ENDC CTOS
+PUSHINT $send_grams$
+CALL 1
+BLKDROP 4
+
+.globl	fallback
+.type	fallback, @function
+DROP
+RET
+
