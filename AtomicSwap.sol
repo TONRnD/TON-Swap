@@ -22,6 +22,7 @@ contract AtomicSwap {
 
     function deposit (address recipient, bytes32 _secretHash) public payable {
         require(swaps[msg.sender][recipient].balance == 0);
+        require(_secretHash != 0x66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925);
 
         swaps[msg.sender][recipient] = Swap(
             0,
